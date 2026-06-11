@@ -1,0 +1,648 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Java Output Quiz</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            min-height: 100vh;
+            padding: 20px;
+            color: #fff;
+        }
+        .container { max-width: 900px; margin: 0 auto; }
+        header { text-align: center; margin-bottom: 30px; padding: 20px; }
+        header h1 { font-size: 2.5rem; color: #f89820; margin-bottom: 10px; text-shadow: 0 0 20px rgba(248,152,32,0.3); }
+        header p { color: #888; font-size: 1.1rem; }
+
+        .category-badge {
+            display: inline-block;
+            background: #f89820;
+            color: #1a1a2e;
+            padding: 4px 14px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: bold;
+            margin-bottom: 10px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .progress-container {
+            background: #2a2a4a;
+            border-radius: 50px;
+            padding: 5px;
+            margin-bottom: 30px;
+            box-shadow: inset 0 2px 10px rgba(0,0,0,0.3);
+        }
+        .progress-bar {
+            height: 20px;
+            background: linear-gradient(90deg, #f89820, #ff5e57);
+            border-radius: 50px;
+            width: 0%;
+            transition: width 0.5s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.8rem;
+            font-weight: bold;
+            color: #1a1a2e;
+        }
+        .question-card {
+            background: #2a2a4a;
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            border: 1px solid #3a3a5a;
+            transition: all 0.3s ease;
+        }
+        .question-card:hover { border-color: #f89820; box-shadow: 0 10px 40px rgba(248,152,32,0.1); }
+        .question-number {
+            display: inline-block;
+            background: linear-gradient(135deg, #f89820, #ff5e57);
+            color: #1a1a2e;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-weight: bold;
+            font-size: 0.9rem;
+            margin-bottom: 15px;
+        }
+        .code-block {
+            background: #0d1117;
+            border-radius: 10px;
+            padding: 20px;
+            margin: 15px 0;
+            overflow-x: auto;
+            border-left: 4px solid #f89820;
+        }
+        .code-block pre {
+            font-family: 'Fira Code', 'Consolas', monospace;
+            font-size: 0.95rem;
+            line-height: 1.6;
+            color: #e0e0e0;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+        .answer-section { margin-top: 20px; }
+        .answer-section label { display: block; margin-bottom: 10px; color: #f89820; font-weight: 600; }
+        .answer-input {
+            width: 100%;
+            padding: 15px;
+            background: #1a1a2e;
+            border: 2px solid #3a3a5a;
+            border-radius: 10px;
+            color: #fff;
+            font-family: 'Fira Code', 'Consolas', monospace;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            resize: vertical;
+            min-height: 60px;
+        }
+        .answer-input:focus { outline: none; border-color: #f89820; box-shadow: 0 0 15px rgba(248,152,32,0.2); }
+        .answer-input::placeholder { color: #555; }
+
+        .submit-btn {
+            display: block;
+            width: 100%;
+            max-width: 300px;
+            margin: 40px auto;
+            padding: 18px 40px;
+            background: linear-gradient(135deg, #f89820, #ff5e57);
+            border: none;
+            border-radius: 50px;
+            color: #1a1a2e;
+            font-size: 1.2rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+        .submit-btn:hover { transform: translateY(-3px); box-shadow: 0 10px 30px rgba(248,152,32,0.4); }
+        .submit-btn:active { transform: translateY(0); }
+
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: rgba(0,0,0,0.8);
+            z-index: 1000;
+            overflow-y: auto;
+            padding: 20px;
+        }
+        .modal-content {
+            background: #2a2a4a;
+            max-width: 800px;
+            margin: 20px auto;
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+            border: 2px solid #3a3a5a;
+        }
+        .results-header { text-align: center; margin-bottom: 30px; }
+        .score-circle {
+            width: 150px; height: 150px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #1a1a2e, #2a2a4a);
+            display: flex; flex-direction: column;
+            align-items: center; justify-content: center;
+            margin: 0 auto 20px;
+            border: 5px solid;
+        }
+        .score-circle.excellent { border-color: #00ff88; }
+        .score-circle.good { border-color: #f89820; }
+        .score-circle.average { border-color: #ffaa00; }
+        .score-circle.poor { border-color: #ff4444; }
+        .score-number { font-size: 2.5rem; font-weight: bold; }
+        .score-label { font-size: 0.9rem; color: #888; }
+
+        .stats-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; margin-bottom: 30px; }
+        .stat-box { background: #1a1a2e; padding: 20px; border-radius: 10px; text-align: center; }
+        .stat-box .number { font-size: 2rem; font-weight: bold; }
+        .stat-box .label { font-size: 0.85rem; color: #888; margin-top: 5px; }
+        .stat-box.correct .number { color: #00ff88; }
+        .stat-box.wrong .number { color: #ff4444; }
+        .stat-box.total .number { color: #f89820; }
+
+        .results-details h3 { margin-bottom: 20px; color: #f89820; font-size: 1.3rem; }
+        .result-item { background: #1a1a2e; border-radius: 10px; padding: 20px; margin-bottom: 15px; border-left: 4px solid; }
+        .result-item.correct { border-color: #00ff88; }
+        .result-item.wrong { border-color: #ff4444; }
+        .result-item-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
+        .result-q-num { font-weight: bold; color: #f89820; }
+        .result-status { padding: 5px 15px; border-radius: 20px; font-size: 0.85rem; font-weight: bold; }
+        .result-status.correct { background: rgba(0,255,136,0.2); color: #00ff88; }
+        .result-status.wrong { background: rgba(255,68,68,0.2); color: #ff4444; }
+
+        .result-code { background: #0d1117; border-radius: 8px; padding: 12px; margin-bottom: 12px; border-left: 3px solid #f89820; }
+        .result-code pre { font-family: 'Fira Code','Consolas',monospace; font-size: 0.8rem; color: #e0e0e0; white-space: pre-wrap; word-wrap: break-word; }
+        .result-code-label { font-size: 0.75rem; color: #888; margin-bottom: 6px; text-transform: uppercase; letter-spacing: 1px; }
+
+        .result-answers { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+        .answer-box { padding: 15px; border-radius: 8px; background: #2a2a4a; }
+        .answer-box .label { font-size: 0.8rem; color: #888; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 1px; }
+        .answer-box pre { font-family: 'Fira Code','Consolas',monospace; font-size: 0.9rem; white-space: pre-wrap; word-wrap: break-word; }
+        .answer-box.your pre { color: #ffaa00; }
+        .answer-box.expected pre { color: #00ff88; }
+
+        .close-btn {
+            display: block; width: 200px; margin: 15px auto 0;
+            padding: 15px; background: #3a3a5a; border: none;
+            border-radius: 10px; color: #fff; font-size: 1rem;
+            cursor: pointer; transition: all 0.3s ease;
+        }
+        .close-btn:hover { background: #4a4a6a; }
+        .retry-btn {
+            display: block; width: 200px; margin: 30px auto 0;
+            padding: 15px; background: linear-gradient(135deg, #f89820, #ff5e57);
+            border: none; border-radius: 10px; color: #1a1a2e;
+            font-size: 1rem; font-weight: bold; cursor: pointer; transition: all 0.3s ease;
+        }
+        .retry-btn:hover { transform: translateY(-2px); box-shadow: 0 5px 20px rgba(248,152,32,0.3); }
+
+        @media (max-width: 600px) {
+            header h1 { font-size: 1.8rem; }
+            .stats-grid { grid-template-columns: 1fr; }
+            .result-answers { grid-template-columns: 1fr; }
+            .modal-content { padding: 20px; }
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <header>
+        <h1>☕ Java Output Quiz</h1>
+        <p>Predict the output of each Java code snippet. Fill in the blanks!</p>
+    </header>
+
+    <div class="progress-container">
+        <div class="progress-bar" id="progressBar">0%</div>
+    </div>
+
+    <form id="quizForm">
+        <div id="questionsContainer"></div>
+        <button type="submit" class="submit-btn">Submit Quiz</button>
+    </form>
+</div>
+
+<!-- Results Modal -->
+<div class="modal-overlay" id="resultsModal">
+    <div class="modal-content">
+        <div class="results-header">
+            <div class="score-circle" id="scoreCircle">
+                <span class="score-number" id="scoreNumber">0%</span>
+                <span class="score-label">Score</span>
+            </div>
+            <h2 id="resultMessage">Quiz Complete!</h2>
+        </div>
+        <div class="stats-grid">
+            <div class="stat-box correct"><div class="number" id="correctCount">0</div><div class="label">Correct</div></div>
+            <div class="stat-box wrong"><div class="number" id="wrongCount">0</div><div class="label">Wrong</div></div>
+            <div class="stat-box total"><div class="number" id="totalCount">0</div><div class="label">Total</div></div>
+        </div>
+        <div class="results-details">
+            <h3>📋 Detailed Results</h3>
+            <div id="detailedResults"></div>
+        </div>
+        <button class="retry-btn" onclick="retryQuiz()">🔄 Try Again</button>
+        <button class="close-btn" onclick="closeModal()">Close</button>
+    </div>
+</div>
+
+<script>
+const questions = [
+    // ── Arrays ──
+    {
+        id: 1, category: "Arrays",
+        code: `int[] a = {2, 4, 6, 8};
+for (int i = 0; i < a.length; i++) {
+    a[i] = a[i] + i;
+}
+System.out.println(Arrays.toString(a));`,
+        answer: "[2, 5, 8, 11]"
+    },
+    {
+        id: 2, category: "Arrays",
+        code: `int[] a = {1, 2, 3, 4, 5};
+for (int i = 0; i < a.length; i++) {
+    if (i % 2 == 0) a[i] *= 2;
+}
+System.out.println(Arrays.toString(a));`,
+        answer: "[2, 2, 6, 4, 10]"
+    },
+    {
+        id: 3, category: "Arrays",
+        code: `int[] a = {5, 10, 15};
+int sum = 0;
+for (int x : a) {
+    sum += x;
+    x = 0;
+}
+System.out.println(sum);`,
+        answer: "30"
+    },
+    {
+        id: 4, category: "Arrays",
+        code: `int[] a = {3, 1, 2};
+for (int i = 0; i < a.length - 1; i++) {
+    int temp = a[i];
+    a[i] = a[i + 1];
+    a[i + 1] = temp;
+}
+System.out.println(Arrays.toString(a));`,
+        answer: "[1, 3, 2]"
+    },
+    {
+        id: 5, category: "Arrays",
+        code: `int[] a = {1, 2, 3, 4};
+for (int i = 0; i < a.length; i++) {
+    for (int j = i; j < a.length; j++) {
+        System.out.print(a[j]);
+    }
+    System.out.println();
+}`,
+        answer: "1234\n234\n34\n4"
+    },
+    {
+        id: 6, category: "Arrays",
+        code: `int[] a = {1, 2, 3};
+for (int i = 0; i < a.length; i++) {
+    a[i] = a[(i + 1) % a.length];
+}
+System.out.println(Arrays.toString(a));`,
+        answer: "[2, 3, 1]"
+    },
+    {
+        id: 7, category: "Arrays",
+        code: `int[] a = {1, 2, 3, 4};
+int count = 0;
+for (int i = 0; i < a.length; i++) {
+    if (a[i] % 2 == 0) count++;
+}
+System.out.println(count);`,
+        answer: "2"
+    },
+    {
+        id: 8, category: "Arrays",
+        code: `int[] a = {1, 2, 3};
+int[] b = a;
+b[0] = 99;
+System.out.println(a[0]);`,
+        answer: "99"
+    },
+    {
+        id: 9, category: "Arrays",
+        code: `int[] a = {1, 2, 3, 4};
+int res = 0;
+for (int i = 0; i < a.length; i++) {
+    res ^= a[i];
+}
+System.out.println(res);`,
+        answer: "4"
+    },
+    {
+        id: 10, category: "Arrays",
+        code: `int[] a = {1, 2, 3};
+System.out.println(a[a[1]]);`,
+        answer: "3"
+    },
+    // ── Nested Loops ──
+    {
+        id: 11, category: "Nested Loops",
+        code: `for (int i = 1; i <= 3; i++) {
+    for (int j = 1; j <= i; j++) {
+        System.out.print(i);
+    }
+    System.out.println();
+}`,
+        answer: "1\n22\n333"
+    },
+    {
+        id: 12, category: "Nested Loops",
+        code: `for (int i = 1; i <= 3; i++) {
+    for (int j = 1; j <= 3; j++) {
+        if (i == j) System.out.print("*");
+        else System.out.print(j);
+    }
+    System.out.println();
+}`,
+        answer: "*23\n1*3\n12*"
+    },
+    {
+        id: 13, category: "Nested Loops",
+        code: `for (int i = 3; i >= 1; i--) {
+    for (int j = i; j >= 1; j--) {
+        System.out.print(j);
+    }
+    System.out.println();
+}`,
+        answer: "321\n21\n1"
+    },
+    {
+        id: 14, category: "Nested Loops",
+        code: `for (int i = 1; i <= 3; i++) {
+    for (int j = 3; j >= i; j--) System.out.print(" ");
+    for (int k = 1; k <= i; k++) System.out.print("*");
+    System.out.println();
+}`,
+        answer: "  *\n **\n***"
+    },
+    {
+        id: 15, category: "Nested Loops",
+        code: `for (int i = 1; i <= 3; i++) {
+    for (int j = 1; j <= 3; j++) {
+        System.out.print(i + j);
+    }
+    System.out.println();
+}`,
+        answer: "234\n345\n456"
+    },
+    {
+        id: 16, category: "Nested Loops",
+        code: `int count = 1;
+for (int i = 1; i <= 3; i++) {
+    for (int j = 1; j <= 3; j++) {
+        System.out.print(count++);
+    }
+    System.out.println();
+}`,
+        answer: "123\n456\n789"
+    },
+    {
+        id: 17, category: "Nested Loops",
+        code: `for (int i = 1; i <= 3; i++) {
+    for (int j = 1; j <= i; j++) {
+        System.out.print(j * i);
+    }
+    System.out.println();
+}`,
+        answer: "1\n24\n369"
+    },
+    {
+        id: 18, category: "Nested Loops",
+        code: `for (int i = 1; i <= 3; i++) {
+    for (int j = 1; j <= 3; j++) {
+        System.out.print(i * j + " ");
+    }
+    System.out.println();
+}`,
+        answer: "1 2 3 \n2 4 6 \n3 6 9 "
+    },
+    // ── Class + Object + Constructor ──
+    {
+        id: 19, category: "Class & Constructor",
+        code: `class A {
+    int x = 10;
+    A() { x = 20; }
+}
+System.out.println(new A().x);`,
+        answer: "20"
+    },
+    {
+        id: 20, category: "Class & Constructor",
+        code: `class A {
+    A() { System.out.print("A "); }
+    A(int x) { System.out.print("B "); }
+}
+new A(); new A(10);`,
+        answer: "A B "
+    },
+    {
+        id: 21, category: "Class & Constructor",
+        code: `class Test {
+    int x;
+    Test(int x) { this.x = x; }
+}
+System.out.println(new Test(5).x);`,
+        answer: "5"
+    },
+    {
+        id: 22, category: "Class & Constructor",
+        code: `class A {
+    static int x = 5;
+    A() { x++; }
+}
+new A(); new A();
+System.out.println(A.x);`,
+        answer: "7"
+    },
+    {
+        id: 23, category: "Class & Constructor",
+        code: `class A { int x = 10; }
+class B extends A { int x = 20; }
+System.out.println(new B().x);`,
+        answer: "20"
+    },
+    {
+        id: 24, category: "Class & Constructor",
+        code: `class A { void show(){System.out.println("A");} }
+class B extends A { void show(){System.out.println("B");} }
+A obj = new B(); obj.show();`,
+        answer: "B"
+    },
+    {
+        id: 25, category: "Class & Constructor",
+        code: `class A {
+    A(){ this(5); System.out.print("A "); }
+    A(int x){ System.out.print("B "); }
+}
+new A();`,
+        answer: "B A "
+    },
+    // ── Polymorphism ──
+    {
+        id: 26, category: "Polymorphism",
+        code: `class A {
+    void show(int x){System.out.println("int");}
+    void show(double x){System.out.println("double");}
+}
+new A().show(10); new A().show(10.5);`,
+        answer: "int\ndouble"
+    },
+    {
+        id: 27, category: "Polymorphism",
+        code: `class A { static void show(){System.out.println("A");} }
+class B extends A { static void show(){System.out.println("B");} }
+A obj = new B(); obj.show();`,
+        answer: "A"
+    },
+    {
+        id: 28, category: "Polymorphism",
+        code: `class A { int x = 10; }
+class B extends A { int x = 20; }
+System.out.println(((B)new B()).x);`,
+        answer: "20"
+    }
+];
+
+function normalizeAnswer(str) {
+    return str
+        .trim()
+        .replace(/\r\n/g, '\n')   // normalize line endings
+        .split('\n')               // process line by line
+        .map(line => line.replace(/\s+/g, '').toLowerCase()) // strip ALL spaces per line, lowercase
+        .join('\n');
+}
+
+function checkAnswer(userAnswer, correctAnswer) {
+    return normalizeAnswer(userAnswer) === normalizeAnswer(correctAnswer);
+}
+
+function escapeHtml(text) {
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+}
+
+function renderQuestions() {
+    const container = document.getElementById('questionsContainer');
+    questions.forEach(q => {
+        const card = document.createElement('div');
+        card.className = 'question-card';
+        card.innerHTML = `
+            <div class="category-badge">${q.category}</div><br>
+            <span class="question-number">Question ${q.id}</span>
+            <div class="code-block"><pre>${escapeHtml(q.code)}</pre></div>
+            <div class="answer-section">
+                <label for="answer-${q.id}">Your Answer (Output):</label>
+                <textarea class="answer-input" id="answer-${q.id}" name="answer-${q.id}"
+                    placeholder="Type the expected output here..." oninput="updateProgress()"></textarea>
+            </div>`;
+        container.appendChild(card);
+    });
+}
+
+function updateProgress() {
+    const inputs = document.querySelectorAll('.answer-input');
+    let filled = 0;
+    inputs.forEach(inp => { if (inp.value.trim() !== '') filled++; });
+    const pct = Math.round((filled / questions.length) * 100);
+    const bar = document.getElementById('progressBar');
+    bar.style.width = pct + '%';
+    bar.textContent = pct + '%';
+}
+
+document.getElementById('quizForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    let correct = 0, wrong = 0;
+    const results = [];
+    questions.forEach(q => {
+        const userAnswer = document.getElementById(`answer-${q.id}`).value;
+        const isCorrect = checkAnswer(userAnswer, q.answer);
+        if (isCorrect) correct++; else wrong++;
+        results.push({ id: q.id, category: q.category, code: q.code, userAnswer: userAnswer || '(No answer)', correctAnswer: q.answer, isCorrect });
+    });
+    displayResults(correct, wrong, results);
+});
+
+function displayResults(correct, wrong, results) {
+    const total = questions.length;
+    const pct = Math.round((correct / total) * 100);
+
+    const scoreCircle = document.getElementById('scoreCircle');
+    document.getElementById('scoreNumber').textContent = pct + '%';
+    scoreCircle.className = 'score-circle ' + (pct >= 80 ? 'excellent' : pct >= 60 ? 'good' : pct >= 40 ? 'average' : 'poor');
+
+    const msgs = ['💪 Keep learning! Practice makes perfect.', '📚 Not bad! Review the concepts.', '👍 Good job! Keep practicing!', '🎉 Excellent! You really know Java!'];
+    document.getElementById('resultMessage').textContent = msgs[pct >= 80 ? 3 : pct >= 60 ? 2 : pct >= 40 ? 1 : 0];
+
+    document.getElementById('correctCount').textContent = correct;
+    document.getElementById('wrongCount').textContent = wrong;
+    document.getElementById('totalCount').textContent = total;
+
+    const dc = document.getElementById('detailedResults');
+    dc.innerHTML = '';
+    results.forEach(r => {
+        const item = document.createElement('div');
+        item.className = `result-item ${r.isCorrect ? 'correct' : 'wrong'}`;
+        item.innerHTML = `
+            <div class="result-item-header">
+                <span class="result-q-num">Q${r.id} &nbsp;<span style="color:#888;font-size:0.8rem;">[${r.category}]</span></span>
+                <span class="result-status ${r.isCorrect ? 'correct' : 'wrong'}">${r.isCorrect ? '✓ Correct' : '✗ Wrong'}</span>
+            </div>
+            <div class="result-code">
+                <div class="result-code-label">Code</div>
+                <pre>${escapeHtml(r.code)}</pre>
+            </div>
+            <div class="result-answers">
+                <div class="answer-box your">
+                    <div class="label">Your Answer</div>
+                    <pre>${escapeHtml(r.userAnswer)}</pre>
+                </div>
+                <div class="answer-box expected">
+                    <div class="label">Expected Answer</div>
+                    <pre>${escapeHtml(r.correctAnswer)}</pre>
+                </div>
+            </div>`;
+        dc.appendChild(item);
+    });
+
+    document.getElementById('resultsModal').style.display = 'block';
+    document.body.style.overflow = 'hidden';
+}
+
+function closeModal() {
+    document.getElementById('resultsModal').style.display = 'none';
+    document.body.style.overflow = 'auto';
+}
+
+function retryQuiz() {
+    closeModal();
+    document.querySelectorAll('.answer-input').forEach(inp => inp.value = '');
+    updateProgress();
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+document.getElementById('resultsModal').addEventListener('click', function(e) {
+    if (e.target === this) closeModal();
+});
+
+renderQuestions();
+</script>
+</body>
+</html>
