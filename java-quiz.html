@@ -1,0 +1,528 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Java Output Quiz</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#0F172A;--surface:#1E293B;--surface2:#273548;--border:#334155;
+  --accent:#6366F1;--accent2:#818CF8;--correct:#10B981;--wrong:#F43F5E;
+  --text:#F1F5F9;--muted:#94A3B8;--code-bg:#0D1117;
+}
+body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;min-height:100vh;padding-bottom:4rem}
+
+/* HEADER */
+.hero{background:var(--surface);border-bottom:1px solid var(--border);padding:2.5rem 1.5rem 2rem;text-align:center;position:relative;overflow:hidden}
+.hero::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse 80% 60% at 50% -20%,rgba(99,102,241,.18),transparent)}
+.hero-label{font-size:11px;font-weight:600;letter-spacing:.12em;color:var(--accent2);text-transform:uppercase;margin-bottom:.75rem}
+.hero h1{font-size:clamp(1.6rem,4vw,2.4rem);font-weight:700;letter-spacing:-.02em;line-height:1.2;margin-bottom:.6rem}
+.hero h1 span{color:var(--accent)}
+.hero p{color:var(--muted);font-size:.95rem;max-width:440px;margin:0 auto 1.5rem}
+.hero-stats{display:flex;gap:2rem;justify-content:center;flex-wrap:wrap}
+.hstat{text-align:center}
+.hstat-n{font-size:1.6rem;font-weight:700;color:var(--accent);font-family:'JetBrains Mono',monospace}
+.hstat-l{font-size:.75rem;color:var(--muted);text-transform:uppercase;letter-spacing:.08em}
+
+/* PROGRESS */
+.progress-wrap{background:var(--surface);border-bottom:1px solid var(--border);padding:.75rem 1.5rem;position:sticky;top:0;z-index:10}
+.progress-inner{max-width:860px;margin:0 auto;display:flex;align-items:center;gap:1rem}
+.prog-bar{flex:1;height:6px;background:var(--border);border-radius:99px;overflow:hidden}
+.prog-fill{height:100%;background:linear-gradient(90deg,var(--accent),var(--accent2));border-radius:99px;transition:width .4s cubic-bezier(.4,0,.2,1)}
+.prog-text{font-size:.8rem;color:var(--muted);white-space:nowrap;font-family:'JetBrains Mono',monospace}
+
+/* SECTIONS */
+.section-header{max-width:860px;margin:2.5rem auto .5rem;padding:0 1.5rem;display:flex;align-items:center;gap:1rem}
+.section-pill{background:var(--accent);color:#fff;font-size:.7rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;padding:.3rem .75rem;border-radius:99px}
+.section-line{flex:1;height:1px;background:var(--border)}
+
+/* QUESTION CARD */
+.q-card{max-width:860px;margin:.75rem auto;padding:0 1.5rem}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:16px;overflow:hidden;transition:border-color .2s}
+.card:focus-within{border-color:var(--accent)}
+.card-top{display:flex;align-items:center;gap:.75rem;padding:.9rem 1.2rem;border-bottom:1px solid var(--border);background:var(--surface2)}
+.q-badge{background:var(--accent);color:#fff;font-size:.72rem;font-weight:700;padding:.25rem .6rem;border-radius:6px;font-family:'JetBrains Mono',monospace;min-width:32px;text-align:center}
+.q-title{font-size:.82rem;color:var(--muted);font-weight:500}
+.status-dot{width:8px;height:8px;border-radius:50%;background:var(--border);margin-left:auto;transition:background .2s}
+.status-dot.filled{background:var(--accent2)}
+.status-dot.correct{background:var(--correct)}
+.status-dot.wrong{background:var(--wrong)}
+
+/* CODE BLOCK */
+.code-wrap{position:relative;background:var(--code-bg);border-bottom:1px solid var(--border)}
+.code-lang{position:absolute;top:.6rem;right:.8rem;font-size:.65rem;color:#4B5563;font-family:'JetBrains Mono',monospace;text-transform:uppercase;letter-spacing:.08em}
+.code-block{padding:1rem 1.2rem 1rem 0;overflow-x:auto;counter-reset:line}
+.code-block code{font-family:'JetBrains Mono',monospace;font-size:.78rem;line-height:1.7;color:#E2E8F0;display:block;white-space:pre}
+.code-block code .ln{display:inline-block;width:2.2rem;text-align:right;color:#374151;user-select:none;padding-right:.8rem;font-size:.72rem}
+.kw{color:#C792EA}.ty{color:#82AAFF}.st{color:#C3E88D}.cm{color:#546E7A;font-style:italic}.nu{color:#F78C6C}.fn{color:#82AAFF}
+
+/* INPUT AREA */
+.input-area{padding:1rem 1.2rem;display:flex;align-items:center;gap:.75rem}
+.input-label{font-size:.72rem;color:var(--muted);white-space:nowrap;font-weight:500}
+.ans-input{flex:1;background:var(--code-bg);border:1.5px solid var(--border);border-radius:8px;padding:.55rem .9rem;font-family:'JetBrains Mono',monospace;font-size:.85rem;color:var(--text);outline:none;transition:border-color .2s,box-shadow .2s;caret-color:var(--accent)}
+.ans-input::placeholder{color:#374151}
+.ans-input:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(99,102,241,.15)}
+.ans-input.correct-input{border-color:var(--correct);background:rgba(16,185,129,.07)}
+.ans-input.wrong-input{border-color:var(--wrong);background:rgba(244,63,94,.07)}
+
+/* VERDICT (shown after submit) */
+.verdict{display:none;padding:.75rem 1.2rem;border-top:1px solid var(--border);gap:.75rem;align-items:flex-start;flex-wrap:wrap}
+.verdict.show{display:flex}
+.v-chip{font-size:.72rem;font-family:'JetBrains Mono',monospace;padding:.3rem .7rem;border-radius:6px;font-weight:500;white-space:nowrap}
+.v-chip.ok{background:rgba(16,185,129,.15);color:#6EE7B7;border:1px solid rgba(16,185,129,.3)}
+.v-chip.bad{background:rgba(244,63,94,.12);color:#FDA4AF;border:1px solid rgba(244,63,94,.25)}
+.v-chip.ans-chip{background:rgba(99,102,241,.12);color:#A5B4FC;border:1px solid rgba(99,102,241,.25)}
+.v-label{font-size:.7rem;color:var(--muted);align-self:center}
+
+/* SUBMIT */
+.submit-wrap{max-width:860px;margin:2rem auto 0;padding:0 1.5rem;display:flex;gap:1rem;align-items:center;flex-wrap:wrap}
+.btn-submit{background:var(--accent);color:#fff;border:none;padding:.85rem 2.5rem;border-radius:10px;font-family:'Inter',sans-serif;font-size:.95rem;font-weight:600;cursor:pointer;transition:background .2s,transform .1s;letter-spacing:.01em}
+.btn-submit:hover{background:#4F46E5}
+.btn-submit:active{transform:scale(.98)}
+.btn-reset{background:transparent;color:var(--muted);border:1px solid var(--border);padding:.85rem 1.5rem;border-radius:10px;font-family:'Inter',sans-serif;font-size:.95rem;font-weight:500;cursor:pointer;transition:border-color .2s,color .2s}
+.btn-reset:hover{border-color:var(--accent2);color:var(--text)}
+
+/* RESULT PANEL */
+.result-panel{max-width:860px;margin:2rem auto 0;padding:0 1.5rem;display:none}
+.result-panel.show{display:block}
+.result-card{background:var(--surface);border:1px solid var(--border);border-radius:16px;overflow:hidden}
+.result-top{padding:2rem;text-align:center;border-bottom:1px solid var(--border);background:var(--surface2)}
+.score-ring{width:110px;height:110px;margin:0 auto 1.2rem;position:relative}
+.score-ring svg{transform:rotate(-90deg)}
+.score-ring .ring-bg{fill:none;stroke:var(--border);stroke-width:8}
+.score-ring .ring-fill{fill:none;stroke-width:8;stroke-linecap:round;transition:stroke-dashoffset 1s cubic-bezier(.4,0,.2,1)}
+.score-number{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center}
+.score-pct{font-size:1.6rem;font-weight:700;font-family:'JetBrains Mono',monospace;line-height:1}
+.score-sub{font-size:.65rem;color:var(--muted);margin-top:2px}
+.result-title{font-size:1.2rem;font-weight:700;margin-bottom:.3rem}
+.result-sub{color:var(--muted);font-size:.88rem}
+.result-chips{display:flex;gap:.75rem;justify-content:center;margin-top:1.2rem;flex-wrap:wrap}
+.rc{padding:.4rem 1rem;border-radius:99px;font-size:.8rem;font-weight:600}
+.rc.c{background:rgba(16,185,129,.15);color:#6EE7B7;border:1px solid rgba(16,185,129,.3)}
+.rc.w{background:rgba(244,63,94,.12);color:#FDA4AF;border:1px solid rgba(244,63,94,.25)}
+
+/* RESULT TABLE */
+.result-table{width:100%;border-collapse:collapse;font-size:.8rem}
+.result-table thead th{padding:.75rem 1rem;text-align:left;font-size:.7rem;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;border-bottom:1px solid var(--border);background:var(--surface2);font-weight:600}
+.result-table tbody tr{border-bottom:1px solid rgba(51,65,85,.5)}
+.result-table tbody tr:last-child{border-bottom:none}
+.result-table td{padding:.75rem 1rem;vertical-align:middle}
+.result-table td:first-child{width:4rem;font-family:'JetBrains Mono',monospace;color:var(--muted);font-size:.72rem}
+.mono{font-family:'JetBrains Mono',monospace}
+.tag-ok{background:rgba(16,185,129,.15);color:#6EE7B7;border:1px solid rgba(16,185,129,.3);padding:.2rem .55rem;border-radius:5px;font-size:.7rem;font-weight:600;white-space:nowrap}
+.tag-bad{background:rgba(244,63,94,.12);color:#FDA4AF;border:1px solid rgba(244,63,94,.25);padding:.2rem .55rem;border-radius:5px;font-size:.7rem;font-weight:600;white-space:nowrap}
+.your-ans{color:var(--text)}
+.your-ans.wrong{color:#FDA4AF}
+.correct-ans{color:#6EE7B7}
+
+/* ANIMATIONS */
+@keyframes fadeUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+.card{animation:fadeUp .35s ease both}
+.q-card:nth-child(1) .card{animation-delay:.03s}
+.q-card:nth-child(2) .card{animation-delay:.06s}
+.q-card:nth-child(3) .card{animation-delay:.09s}
+</style>
+</head>
+<body>
+
+<div class="hero">
+  <div class="hero-label">Java Programming</div>
+  <h1>Output <span>Prediction</span> Quiz</h1>
+  <p>Predict the exact output of each Java code snippet. Type your answer and submit.</p>
+  <div class="hero-stats">
+    <div class="hstat"><div class="hstat-n">25</div><div class="hstat-l">Questions</div></div>
+    <div class="hstat"><div class="hstat-n">2</div><div class="hstat-l">Sections</div></div>
+    <div class="hstat"><div class="hstat-n" id="answered-count">0</div><div class="hstat-l">Answered</div></div>
+  </div>
+</div>
+
+<div class="progress-wrap">
+  <div class="progress-inner">
+    <div class="prog-bar"><div class="prog-fill" id="prog-fill" style="width:0%"></div></div>
+    <span class="prog-text" id="prog-text">0 / 25</span>
+  </div>
+</div>
+
+<div id="quiz-form">
+
+<!-- SECTION A -->
+<div class="section-header">
+  <span class="section-pill">Section A</span>
+  <div class="section-line"></div>
+  <span style="font-size:.75rem;color:var(--muted)">Questions 1–15</span>
+</div>
+
+</div><!-- end quiz-form, filled by JS -->
+
+<div class="submit-wrap" id="submit-wrap" style="display:none">
+  <button class="btn-submit" onclick="submitQuiz()">Submit All Answers</button>
+  <button class="btn-reset" onclick="resetQuiz()">Reset</button>
+</div>
+
+<div class="result-panel" id="result-panel">
+  <div class="result-card">
+    <div class="result-top">
+      <div class="score-ring">
+        <svg width="110" height="110" viewBox="0 0 110 110">
+          <circle class="ring-bg" cx="55" cy="55" r="46"/>
+          <circle class="ring-fill" id="ring-fill" cx="55" cy="55" r="46" stroke-dasharray="289" stroke-dashoffset="289"/>
+        </svg>
+        <div class="score-number">
+          <div class="score-pct" id="score-pct">0%</div>
+          <div class="score-sub" id="score-frac">0/25</div>
+        </div>
+      </div>
+      <div class="result-title" id="result-title">Quiz Complete!</div>
+      <div class="result-sub" id="result-sub"></div>
+      <div class="result-chips">
+        <span class="rc c" id="rc-correct">0 Correct</span>
+        <span class="rc w" id="rc-wrong">0 Wrong</span>
+      </div>
+    </div>
+    <div style="overflow-x:auto">
+      <table class="result-table">
+        <thead>
+          <tr>
+            <th>Q</th>
+            <th>Status</th>
+            <th>Your Answer</th>
+            <th>Correct Answer</th>
+          </tr>
+        </thead>
+        <tbody id="result-tbody"></tbody>
+      </table>
+    </div>
+  </div>
+  <div style="display:flex;gap:1rem;margin-top:1.2rem;padding:0">
+    <button class="btn-reset" onclick="resetQuiz()" style="width:100%;text-align:center">Try Again</button>
+  </div>
+</div>
+
+<script>
+const questions=[
+  {sec:"A",n:1,ans:"A1 B1 A2 A3 B2 B3",label:"What is the output?",code:
+`<span class="kw">class</span> <span class="ty">A</span> {
+  <span class="kw">static</span> { <span class="ty">System</span>.out.print(<span class="st">"A1 "</span>); }
+  { <span class="ty">System</span>.out.print(<span class="st">"A2 "</span>); }
+  <span class="fn">A</span>() { <span class="ty">System</span>.out.print(<span class="st">"A3 "</span>); }
+}
+<span class="kw">class</span> <span class="ty">B</span> <span class="kw">extends</span> <span class="ty">A</span> {
+  <span class="kw">static</span> { <span class="ty">System</span>.out.print(<span class="st">"B1 "</span>); }
+  { <span class="ty">System</span>.out.print(<span class="st">"B2 "</span>); }
+  <span class="fn">B</span>() { <span class="ty">System</span>.out.print(<span class="st">"B3 "</span>); }
+}
+<span class="cm">// main: new B();</span>`},
+
+  {sec:"A",n:2,ans:"int",label:"What is the output?",code:
+`<span class="kw">static void</span> <span class="fn">show</span>(<span class="ty">Integer</span> i) { <span class="ty">System</span>.out.print(<span class="st">"Integer "</span>); }
+<span class="kw">static void</span> <span class="fn">show</span>(<span class="kw">int</span> i)     { <span class="ty">System</span>.out.print(<span class="st">"int "</span>); }
+<span class="cm">// main: show(10);</span>`},
+
+  {sec:"A",n:3,ans:"7 12",label:"What is the output?",code:
+`<span class="kw">int</span> a = <span class="nu">5</span>;
+<span class="kw">int</span> b = a++ + ++a;
+<span class="ty">System</span>.out.println(a + <span class="st">" "</span> + b);`},
+
+  {sec:"A",n:4,ans:"20",label:"What is the output?",code:
+`<span class="kw">static int</span> <span class="fn">test</span>() {
+  <span class="kw">try</span>     { <span class="kw">return</span> <span class="nu">10</span>; }
+  <span class="kw">finally</span> { <span class="kw">return</span> <span class="nu">20</span>; }
+}
+<span class="ty">System</span>.out.println(<span class="fn">test</span>());`},
+
+  {sec:"A",n:5,ans:"12",label:"What is the output?",code:
+`<span class="kw">static int</span> x = <span class="nu">10</span>;
+<span class="fn">Test</span>() { x++; }
+<span class="cm">// main: new Test(); new Test(); println(x);</span>`},
+
+  {sec:"A",n:6,ans:"B",label:"What is the output?",code:
+`<span class="kw">class</span> <span class="ty">A</span> { <span class="kw">void</span> <span class="fn">show</span>() <span class="kw">throws</span> <span class="ty">RuntimeException</span> { print(<span class="st">"A "</span>); } }
+<span class="kw">class</span> <span class="ty">B</span> <span class="kw">extends</span> <span class="ty">A</span> { <span class="kw">void</span> <span class="fn">show</span>() { print(<span class="st">"B "</span>); } }
+<span class="cm">// A obj = new B(); obj.show();</span>`},
+
+  {sec:"A",n:7,ans:"123456",label:"What is the output?",code:
+`<span class="kw">int</span>[][] arr = {{<span class="nu">1</span>,<span class="nu">2</span>,<span class="nu">3</span>},{<span class="nu">4</span>,<span class="nu">5</span>},{<span class="nu">6</span>}};
+<span class="cm">// nested loops print all elements</span>`},
+
+  {sec:"A",n:8,ans:"2 8 26",label:"What is the output?",code:
+`<span class="kw">int</span>[] arr = {<span class="nu">1</span>, <span class="nu">2</span>, <span class="nu">3</span>};
+<span class="kw">for</span>(<span class="kw">int</span> i=<span class="nu">0</span>; i&lt;arr.length; i++)
+  <span class="kw">for</span>(<span class="kw">int</span> j=<span class="nu">0</span>; j&lt;=i; j++)
+    arr[i] += arr[j];
+<span class="kw">for</span>(<span class="kw">int</span> x : arr) <span class="ty">System</span>.out.print(x + <span class="st">" "</span>);`},
+
+  {sec:"A",n:9,ans:"000000",label:"What is the output?",code:
+`<span class="kw">int</span>[][] arr = <span class="kw">new int</span>[<span class="nu">2</span>][<span class="nu">3</span>];
+<span class="cm">// nested loops print arr[i][j]</span>`},
+
+  {sec:"A",n:10,ans:"ArrayIndexOutOfBoundsException",label:"What is the output?",code:
+`<span class="kw">int</span>[][] arr = {{<span class="nu">1</span>,<span class="nu">2</span>},{<span class="nu">3</span>,<span class="nu">4</span>}};
+<span class="kw">for</span>(<span class="kw">int</span>[] row : arr)
+  <span class="kw">for</span>(<span class="kw">int</span> x : row)
+    <span class="ty">System</span>.out.print(arr[<span class="nu">0</span>][x-<span class="nu">1</span>]);`},
+
+  {sec:"A",n:11,ans:"1 4 ArrayIndexOutOfBoundsException",label:"What is the output?",code:
+`<span class="kw">int</span>[][] arr = {{<span class="nu">1</span>,<span class="nu">2</span>},{<span class="nu">3</span>,<span class="nu">4</span>}};
+<span class="kw">for</span>(<span class="kw">int</span> i=<span class="nu">0</span>; i&lt;arr.length; i++)
+  <span class="kw">for</span>(<span class="kw">int</span> j=<span class="nu">0</span>; j&lt;arr[i].length; j++){
+    <span class="ty">System</span>.out.print(arr[i][j] + <span class="st">" "</span>);
+    i++;
+  }`},
+
+  {sec:"A",n:12,ans:"30 20 50 40 30 20",label:"What is the output?",code:
+`<span class="kw">int</span>[] arr = {<span class="nu">10</span>,<span class="nu">20</span>,<span class="nu">30</span>,<span class="nu">40</span>,<span class="nu">50</span>};
+<span class="kw">for</span>(<span class="kw">int</span> i=<span class="nu">0</span>; i&lt;arr.length; i+=<span class="nu">2</span>)
+  <span class="kw">for</span>(<span class="kw">int</span> j=i; j&gt;<span class="nu">0</span>; j--)
+    <span class="ty">System</span>.out.print(arr[j] + <span class="st">" "</span>);`},
+
+  {sec:"A",n:13,ans:"357",label:"What is the output?",code:
+`<span class="kw">int</span>[][] arr = {{<span class="nu">1</span>,<span class="nu">2</span>,<span class="nu">3</span>},{<span class="nu">4</span>,<span class="nu">5</span>,<span class="nu">6</span>},{<span class="nu">7</span>,<span class="nu">8</span>,<span class="nu">9</span>}};
+<span class="kw">if</span>(i + j == arr.length - <span class="nu">1</span>)
+  <span class="ty">System</span>.out.print(arr[i][j]);`},
+
+  {sec:"A",n:14,ans:"StackOverflowError",label:"What is the output?",code:
+`<span class="kw">static int</span> <span class="fn">fun</span>(<span class="kw">int</span> n) {
+  <span class="kw">if</span>(n &lt;= <span class="nu">1</span>) <span class="kw">return</span> <span class="nu">1</span>;
+  <span class="kw">return</span> n * <span class="fn">fun</span>(n--); <span class="cm">// n-- passes original n</span>
+}
+<span class="cm">// fun(3)</span>`},
+
+  {sec:"A",n:15,ans:"24",label:"What is the output?",code:
+`<span class="kw">static int</span> x = <span class="nu">1</span>;
+<span class="kw">static void</span> <span class="fn">fun</span>(<span class="kw">int</span> n) {
+  <span class="kw">if</span>(n == <span class="nu">0</span>) <span class="kw">return</span>;
+  x *= n; <span class="fn">fun</span>(n - <span class="nu">1</span>);
+}
+<span class="cm">// fun(4); println(x);</span>`},
+
+  {sec:"B",n:1,ans:"10 A",label:"What is the output?",code:
+`<span class="kw">class</span> <span class="ty">A</span> {
+  <span class="fn">A</span>()      { <span class="kw">this</span>(<span class="nu">10</span>); <span class="ty">System</span>.out.print(<span class="st">"A "</span>); }
+  <span class="fn">A</span>(<span class="kw">int</span> x) { <span class="ty">System</span>.out.print(x + <span class="st">" "</span>); }
+}
+<span class="cm">// new A();</span>`},
+
+  {sec:"B",n:2,ans:"Static Constructor Constructor",label:"What is the output?",code:
+`<span class="kw">class</span> <span class="ty">A</span> {
+  <span class="kw">static</span> { <span class="ty">System</span>.out.print(<span class="st">"Static "</span>); }
+  <span class="fn">A</span>() { <span class="ty">System</span>.out.print(<span class="st">"Constructor "</span>); }
+}
+<span class="cm">// new A(); new A();</span>`},
+
+  {sec:"B",n:3,ans:"10",label:"What is the output?",code:
+`<span class="kw">class</span> <span class="ty">A</span> { <span class="kw">int</span> x = <span class="nu">10</span>; }
+<span class="kw">class</span> <span class="ty">B</span> <span class="kw">extends</span> <span class="ty">A</span> { <span class="kw">int</span> x = <span class="nu">20</span>; }
+<span class="ty">A</span> obj = <span class="kw">new</span> <span class="fn">B</span>();
+<span class="ty">System</span>.out.println(obj.x);`},
+
+  {sec:"B",n:4,ans:"S1 S2 I C",label:"What is the output?",code:
+`<span class="kw">class</span> <span class="ty">A</span> {
+  <span class="kw">static</span> { print(<span class="st">"S1 "</span>); }
+  { print(<span class="st">"I "</span>); }
+  <span class="kw">static</span> { print(<span class="st">"S2 "</span>); }
+  <span class="fn">A</span>() { print(<span class="st">"C "</span>); }
+}
+<span class="cm">// new A();</span>`},
+
+  {sec:"B",n:5,ans:"A1 A2 B1 B2",label:"What is the output?",code:
+`<span class="kw">class</span> <span class="ty">A</span> {
+  <span class="kw">static</span> { print(<span class="st">"A1 "</span>); }
+  <span class="kw">static</span> { print(<span class="st">"A2 "</span>); }
+}
+<span class="kw">class</span> <span class="ty">B</span> <span class="kw">extends</span> <span class="ty">A</span> {
+  <span class="kw">static</span> { print(<span class="st">"B1 "</span>); }
+  <span class="kw">static</span> { print(<span class="st">"B2 "</span>); }
+}
+<span class="cm">// new B();</span>`},
+
+  {sec:"B",n:6,ans:"A",label:"What is the output?",code:
+`<span class="kw">class</span> <span class="ty">A</span> { <span class="kw">static void</span> <span class="fn">show</span>() { print(<span class="st">"A "</span>); } }
+<span class="kw">class</span> <span class="ty">B</span> <span class="kw">extends</span> <span class="ty">A</span> { <span class="kw">static void</span> <span class="fn">show</span>() { print(<span class="st">"B "</span>); } }
+<span class="ty">A</span> obj = <span class="kw">new</span> <span class="fn">B</span>();
+obj.<span class="fn">show</span>(); <span class="cm">// static method — no polymorphism</span>`},
+
+  {sec:"B",n:7,ans:"I1 I2 C",label:"What is the output?",code:
+`<span class="kw">class</span> <span class="ty">A</span> {
+  { print(<span class="st">"I1 "</span>); }
+  <span class="fn">A</span>() { print(<span class="st">"C "</span>); }
+  { print(<span class="st">"I2 "</span>); }
+}
+<span class="cm">// new A();</span>`},
+
+  {sec:"B",n:8,ans:"A B",label:"What is the output?",code:
+`<span class="kw">class</span> <span class="ty">A</span> { <span class="kw">final void</span> <span class="fn">show</span>() { print(<span class="st">"A "</span>); } }
+<span class="kw">class</span> <span class="ty">B</span> <span class="kw">extends</span> <span class="ty">A</span> { <span class="kw">void</span> <span class="fn">display</span>() { print(<span class="st">"B "</span>); } }
+<span class="ty">B</span> obj = <span class="kw">new</span> <span class="fn">B</span>();
+obj.<span class="fn">show</span>(); obj.<span class="fn">display</span>();`},
+
+  {sec:"B",n:9,ans:"A B",label:"What is the output?",code:
+`<span class="kw">abstract class</span> <span class="ty">A</span> {
+  <span class="fn">A</span>() { print(<span class="st">"A "</span>); }
+  <span class="kw">abstract void</span> <span class="fn">show</span>();
+}
+<span class="kw">class</span> <span class="ty">B</span> <span class="kw">extends</span> <span class="ty">A</span> { <span class="kw">void</span> <span class="fn">show</span>() { print(<span class="st">"B "</span>); } }
+<span class="ty">A</span> obj = <span class="kw">new</span> <span class="fn">B</span>(); obj.<span class="fn">show</span>();`},
+
+  {sec:"B",n:10,ans:"B",label:"What is the output?",code:
+`<span class="kw">class</span> <span class="ty">A</span> { <span class="kw">void</span> <span class="fn">show</span>() { print(<span class="st">"A "</span>); } }
+<span class="kw">class</span> <span class="ty">B</span> <span class="kw">extends</span> <span class="ty">A</span> {
+  <span class="kw">void</span> <span class="fn">show</span>() { print(<span class="st">"B "</span>); }
+  <span class="kw">void</span> <span class="fn">display</span>() { print(<span class="st">"D "</span>); }
+}
+<span class="ty">A</span> obj = <span class="kw">new</span> <span class="fn">B</span>(); obj.<span class="fn">show</span>();`},
+];
+
+function normalize(s){return s.trim().replace(/\s+/g,' ');}
+
+function buildQuiz(){
+  const form=document.getElementById('quiz-form');
+  form.innerHTML='';
+  let curSec='';
+  questions.forEach((q,idx)=>{
+    if(q.sec!==curSec){
+      curSec=q.sec;
+      if(curSec==='B'){
+        const sh=document.createElement('div');
+        sh.className='section-header';
+        sh.innerHTML=`<span class="section-pill">Section B</span><div class="section-line"></div><span style="font-size:.75rem;color:var(--muted)">Questions 1–10</span>`;
+        form.appendChild(sh);
+      } else {
+        const sh=document.createElement('div');
+        sh.className='section-header';
+        sh.innerHTML=`<span class="section-pill">Section A</span><div class="section-line"></div><span style="font-size:.75rem;color:var(--muted)">Questions 1–15</span>`;
+        form.appendChild(sh);
+      }
+    }
+    const wrap=document.createElement('div');
+    wrap.className='q-card';
+    wrap.innerHTML=`
+<div class="card" id="card-${idx}">
+  <div class="card-top">
+    <span class="q-badge">${q.sec}${q.n}</span>
+    <span class="q-title">${q.label}</span>
+    <span class="status-dot" id="dot-${idx}"></span>
+  </div>
+  <div class="code-wrap">
+    <span class="code-lang">java</span>
+    <div class="code-block"><code>${addLineNumbers(q.code)}</code></div>
+  </div>
+  <div class="input-area">
+    <span class="input-label">Output →</span>
+    <input class="ans-input" id="inp-${idx}" type="text" placeholder="Type the exact output..." autocomplete="off" spellcheck="false" oninput="onInput(${idx})">
+  </div>
+  <div class="verdict" id="verdict-${idx}"></div>
+</div>`;
+    form.appendChild(wrap);
+  });
+  document.getElementById('submit-wrap').style.display='flex';
+  updateProgress();
+}
+
+function addLineNumbers(code){
+  const lines=code.split('\n');
+  return lines.map((l,i)=>`<span class="ln">${i+1}</span>${l}`).join('\n');
+}
+
+function onInput(idx){
+  const val=document.getElementById(`inp-${idx}`).value;
+  const dot=document.getElementById(`dot-${idx}`);
+  dot.className='status-dot'+(val.trim()?(' filled'):'');
+  updateProgress();
+}
+
+function updateProgress(){
+  const filled=questions.filter((_,i)=>document.getElementById(`inp-${i}`)&&document.getElementById(`inp-${i}`).value.trim()).length;
+  const total=questions.length;
+  const pct=Math.round(filled/total*100);
+  document.getElementById('prog-fill').style.width=pct+'%';
+  document.getElementById('prog-text').textContent=`${filled} / ${total}`;
+  document.getElementById('answered-count').textContent=filled;
+}
+
+function submitQuiz(){
+  let correct=0;
+  const tbody=document.getElementById('result-tbody');
+  tbody.innerHTML='';
+
+  questions.forEach((q,idx)=>{
+    const input=document.getElementById(`inp-${idx}`);
+    const userRaw=input.value;
+    const user=normalize(userRaw);
+    const right=normalize(q.ans);
+    const ok=user.toLowerCase()===right.toLowerCase();
+    if(ok)correct++;
+
+    input.disabled=true;
+    input.className='ans-input '+(ok?'correct-input':'wrong-input');
+    document.getElementById(`dot-${idx}`).className='status-dot '+(ok?'correct':'wrong');
+
+    const vd=document.getElementById(`verdict-${idx}`);
+    vd.className='verdict show';
+    if(ok){
+      vd.innerHTML=`<span class="v-chip ok">✓ Correct</span>`;
+    } else {
+      vd.innerHTML=`
+        <span class="v-chip bad">✗ Wrong</span>
+        <span class="v-label">Your answer:</span>
+        <span class="v-chip ans-chip">${userRaw||'(blank)'}</span>
+        <span class="v-label">Correct:</span>
+        <span class="v-chip ok">${q.ans}</span>`;
+    }
+
+    const tr=document.createElement('tr');
+    tr.innerHTML=`
+      <td class="mono">${q.sec}${q.n}</td>
+      <td>${ok?'<span class="tag-ok">✓ Correct</span>':'<span class="tag-bad">✗ Wrong</span>'}</td>
+      <td class="mono ${ok?'your-ans':'your-ans wrong'}">${userRaw||'<span style="color:var(--muted);font-style:italic">blank</span>'}</td>
+      <td class="mono correct-ans">${q.ans}</td>`;
+    tbody.appendChild(tr);
+  });
+
+  const total=questions.length;
+  const pct=Math.round(correct/total*100);
+  const circumference=2*Math.PI*46;
+  const offset=circumference-(pct/100)*circumference;
+  const ring=document.getElementById('ring-fill');
+  ring.style.stroke=pct>=80?'#10B981':pct>=50?'#6366F1':'#F43F5E';
+  ring.setAttribute('stroke-dasharray',circumference);
+  setTimeout(()=>ring.style.strokeDashoffset=offset,100);
+
+  document.getElementById('score-pct').textContent=pct+'%';
+  document.getElementById('score-frac').textContent=`${correct}/${total}`;
+  document.getElementById('rc-correct').textContent=`${correct} Correct`;
+  document.getElementById('rc-wrong').textContent=`${total-correct} Wrong`;
+
+  const titles=['Need more practice!','Keep going!','Good effort!','Well done!','Excellent!','Perfect score!'];
+  const ti=pct===100?5:pct>=80?4:pct>=60?3:pct>=40?2:pct>=20?1:0;
+  document.getElementById('result-title').textContent=titles[ti];
+  document.getElementById('result-sub').textContent=`You answered ${correct} out of ${total} correctly (${pct}%).`;
+
+  const rp=document.getElementById('result-panel');
+  rp.className='result-panel show';
+  setTimeout(()=>rp.scrollIntoView({behavior:'smooth',block:'start'}),100);
+
+  document.querySelector('.btn-submit').disabled=true;
+  document.querySelector('.btn-submit').style.opacity='.5';
+}
+
+function resetQuiz(){
+  questions.forEach((_,idx)=>{
+    const inp=document.getElementById(`inp-${idx}`);
+    if(!inp)return;
+    inp.value='';inp.disabled=false;inp.className='ans-input';
+    document.getElementById(`dot-${idx}`).className='status-dot';
+    document.getElementById(`verdict-${idx}`).className='verdict';
+  });
+  document.getElementById('result-panel').className='result-panel';
+  document.querySelector('.btn-submit').disabled=false;
+  document.querySelector('.btn-submit').style.opacity='1';
+  updateProgress();
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+buildQuiz();
+</script>
+</body>
+</html>
